@@ -21,9 +21,14 @@ import com.example.taskmanager.data.Task
 import com.example.taskmanager.data.UserDatabase
 import com.example.taskmanager.databinding.ActivityMain3Binding
 import com.example.taskmanager.databinding.ActivityMain4Binding
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.firestoreSettings
 
 class MainActivity4 : AppCompatActivity() {
     private lateinit var binding: ActivityMain4Binding
+    private lateinit var db : FirebaseFirestore
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMain4Binding.inflate(layoutInflater)
@@ -34,11 +39,10 @@ class MainActivity4 : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
         setSupportActionBar(binding.toolbar2)
         supportActionBar?.title =""
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
+        db= Firebase.firestore
         binding.editTextDate.setOnClickListener {
             val calendar = Calendar.getInstance()
             val currentYear = calendar.get(Calendar.YEAR)
@@ -57,6 +61,8 @@ class MainActivity4 : AppCompatActivity() {
         binding.btnCancel.setOnClickListener{
            onBackPressed()
         }
+        //room için tanımlama
+
         val userDatabase= UserDatabase.getDatabase(applicationContext)
         binding.btnSave.setOnClickListener {
             val title=binding.editTextTitle.text.toString()
@@ -69,51 +75,27 @@ class MainActivity4 : AppCompatActivity() {
             }
             val status=binding.spinner2.selectedItem.toString()
             val mail=binding.editTextMail.text.toString()
-            val task= Task(0,title,description,date,importance,status,mail)
-            userDatabase?.taskDAO()?.insert(task)
+            val task = hashMapOf(
+                "title" to title,
+                "description" to description,
+                "date" to date,
+                "importance" to importance,
+                "status" to status,
+                "mail" to mail
+            )
+            db.collection("Task").add(task)
+                .addOnSuccessListener { documentReference ->
+                    Log.e("Task", "DocumentSnapshot added with ID: ${documentReference.id}")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Task", "Error adding document", e)
+                }
             Toast.makeText(this,"Görev eklendi",Toast.LENGTH_LONG).show()
-            sendLocalNotificationToUser(this,mail, title)
             onBackPressed()
-
         }
-
-
-
     }
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
     }
-    fun sendLocalNotificationToUser(context: Context, userEmail: String, title: String) {
-        // Bildirim kanalını oluştur
-        createNotificationChannel(context)
-
-        // Bildirim oluştur
-        val notificationBuilder = NotificationCompat.Builder(context, "channelId")
-            .setSmallIcon(R.drawable.icon)
-            .setContentTitle("Task Manager")
-            .setContentText(title + " adında yeni bir görev eklendi. ")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-        // Bildirimi gönder
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(userEmail.hashCode(), notificationBuilder.build())
-    }
-
-    // Bildirim kanalını oluştur
-    private fun createNotificationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "MyApp Channel"
-            val descriptionText = "MyApp Notification Channel"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("channelId", name, importance).apply {
-                description = descriptionText
-            }
-
-            // Bildirim kanalını sistemde oluştur
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
 }

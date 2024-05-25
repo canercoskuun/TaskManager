@@ -20,6 +20,7 @@ import com.example.taskmanager.R
 import com.example.taskmanager.data.Task
 import com.example.taskmanager.data.UserDatabase
 import com.example.taskmanager.databinding.ActivityMain6Binding
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity6 : AppCompatActivity() {
     private lateinit var binding: ActivityMain6Binding
@@ -42,13 +43,11 @@ class MainActivity6 : AppCompatActivity() {
             val currentYear = calendar.get(Calendar.YEAR)
             val currentMonth = calendar.get(Calendar.MONTH)
             val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
-
             // DatePickerDialog oluştur ve göster
             val datePickerDialog = DatePickerDialog(this, { _, year, month, dayOfMonth ->
                 // Seçilen tarihi EditText içine yaz
                 binding.editTextDate1.setText("$dayOfMonth/${month + 1}/$year")
             }, currentYear, currentMonth, currentDay)
-
             // DatePickerDialog'ı göster
             datePickerDialog.show()
         }
@@ -64,7 +63,7 @@ class MainActivity6 : AppCompatActivity() {
         }
 
         val task = intent.getSerializableExtra("task") as Task
-        val id=task.taskId
+       // val id=task.taskId
         binding.editTextTitle1.setText(task.title)
         binding.editTextDescrip.setText(task.description)
         binding.editTextDate1.setText(task.deadline)
@@ -81,30 +80,63 @@ class MainActivity6 : AppCompatActivity() {
             "Tamamlanan" -> binding.spinner3.setSelection(4)
         }
         binding.editTextMail1.setText(task.assignedMail)
+        //room için tanımlama
         val userDatabase= UserDatabase.getDatabase(applicationContext)
         binding.btnUpdate.setOnClickListener {
-
-            val title=binding.editTextTitle1.text.toString()
-            val description=binding.editTextDescrip.text.toString()
-            val date=binding.editTextDate1.text.toString()
-            var importance=1
+            val id = task.id
+            val title = binding.editTextTitle1.text.toString()
+            val description = binding.editTextDescrip.text.toString()
+            val date = binding.editTextDate1.text.toString()
+            var importance = 1
             when (binding.spinner7.selectedItem.toString()) {
                 "Önemli" -> importance = 2
                 "Çok Önemli" -> importance = 3
             }
-            val status=binding.spinner3.selectedItem.toString()
-            val mail=binding.editTextMail1.text.toString()
-            val task2= Task(id,title,description,date,importance,status,mail)
-            userDatabase?.taskDAO()?.update(task2)
-            val email = intent.getStringExtra("email")
-            Toast.makeText(this,"Görev güncellendi",Toast.LENGTH_LONG).show()
-            val intent: Intent = Intent(this, MainActivity3::class.java)
-            intent.putExtra("email",email)
-            startActivity(intent)
-            finish()
-            sendLocalNotificationToUser(this,mail, title)
+            val status = binding.spinner3.selectedItem.toString()
+            val mail = binding.editTextMail1.text.toString()
+            val db = FirebaseFirestore.getInstance()
+            Log.e("CANER", "id: $id")
+            db.collection("Task")
+                .document(id) // Belge kimliği ile belgeyi al
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        // Belge bulundu, güncelleme işlemini gerçekleştir
+                        val updatedData = hashMapOf(
+                            "title" to title,
+                            "description" to description,
+                            "date" to date,
+                            "importance" to importance,
+                            "status" to status,
+                            "mail" to mail
+                        )
 
+                        db.collection("Task").document(id)
+                            .update(updatedData as Map<String, Any>)
+                            .addOnSuccessListener {
+                                Log.e("CANER", "Güncellenecek veriler: $updatedData")
+
+                                // Güncelleme başarılı olduğunda yapılacak işlemler
+                                Toast.makeText(this, "Görev güncellendi", Toast.LENGTH_LONG).show()
+                                val intent = Intent(this, MainActivity3::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
+                            .addOnFailureListener { e ->
+                                // Güncelleme başarısız olduğunda yapılacak işlemler
+                                Toast.makeText(this, "Görev güncellenirken bir hata oluştu: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                            }
+                    } else {
+                        // Belge bulunamadı veya başka bir hata oluştu
+                        Toast.makeText(this, "Belge bulunamadı veya başka bir hata oluştu", Toast.LENGTH_LONG).show()
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    // Belge alınırken bir hata oluştu
+                    Toast.makeText(this, "Belge alınırken bir hata oluştu: ${exception.localizedMessage}", Toast.LENGTH_LONG).show()
+                }
         }
+
 
 
 
@@ -116,35 +148,5 @@ class MainActivity6 : AppCompatActivity() {
         onBackPressed()
         return true
     }
-    fun sendLocalNotificationToUser(context: Context, userEmail: String, title: String) {
-        // Bildirim kanalını oluştur
-        createNotificationChannel(context)
 
-        // Bildirim oluştur
-        val notificationBuilder = NotificationCompat.Builder(context, "channelId")
-            .setSmallIcon(R.drawable.icon)
-            .setContentTitle("Task Manager")
-            .setContentText(title + " adındaki görev güncellendi. ")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-        // Bildirimi gönder
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(userEmail.hashCode(), notificationBuilder.build())
-    }
-
-    // Bildirim kanalını oluştur
-    private fun createNotificationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "MyApp Channel"
-            val descriptionText = "MyApp Notification Channel"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("channelId", name, importance).apply {
-                description = descriptionText
-            }
-
-            // Bildirim kanalını sistemde oluştur
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
 }

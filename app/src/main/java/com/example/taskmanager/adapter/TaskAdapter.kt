@@ -19,8 +19,9 @@ import com.example.taskmanager.view.MainActivity5
 import com.example.taskmanager.view.MainActivity6
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.FirebaseFirestore
 
-class TaskAdapter(private val context: Context, val taskList:ArrayList<Task>,private val email:String): RecyclerView.Adapter<TaskAdapter.ViewHolder>() {
+class TaskAdapter(private val context: Context, val taskList:ArrayList<Task>): RecyclerView.Adapter<TaskAdapter.ViewHolder>() {
     class ViewHolder(val binding: CardTasarimBinding):RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -33,6 +34,7 @@ class TaskAdapter(private val context: Context, val taskList:ArrayList<Task>,pri
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
     val task=taskList.get(position)
         with(holder){
             binding.apply {
@@ -40,7 +42,7 @@ class TaskAdapter(private val context: Context, val taskList:ArrayList<Task>,pri
               textViewTaskDescription.text=task.description
                 card.setOnClickListener {
                     val intent: Intent = Intent(context, MainActivity6::class.java)
-                    intent.putExtra("email", email)
+
                     intent.putExtra("task", task)
                     context.startActivity(intent)
                 }
@@ -50,17 +52,23 @@ class TaskAdapter(private val context: Context, val taskList:ArrayList<Task>,pri
                         .setTitle("Görevi Sil")
                         .setMessage("Görevi silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve görev kalıcı olarak silinecek. Devam etmek istiyor musunuz?")
                         .setPositiveButton("Evet"){d,i->
-                            val veritabanı= UserDatabase.getDatabase(context)
-                            veritabanı?.taskDAO()?.delete(task)
-                            Toast.makeText(context,"Görev silindi",Toast.LENGTH_LONG).show()
-                            val intent: Intent = Intent(context, MainActivity3::class.java)
-                            intent.putExtra("email", email)
-                            context.startActivity(intent)
+                            val db = FirebaseFirestore.getInstance()
+                            db.collection("Task")
+                                .document(task.id)
+                                .delete()
+                                .addOnSuccessListener {
+                                    Toast.makeText(context,"Görev silindi",Toast.LENGTH_LONG).show()
+                                    val intent: Intent = Intent(context, MainActivity3::class.java)
+                                    context.startActivity(intent)
+                                }
+                                .addOnFailureListener { e ->
+                                    Toast.makeText(context,"Görev silinirken bir hata oluştu: ${e.localizedMessage}",Toast.LENGTH_LONG).show()
+                                }
                         }
                         .setNegativeButton("İPTAL"){d,i->
-                   //İPTAL EDİLDİ!
+                            // İPTAL EDİLDİ!
                         }
-                            .show()
+                        .show()
                 }
 
 

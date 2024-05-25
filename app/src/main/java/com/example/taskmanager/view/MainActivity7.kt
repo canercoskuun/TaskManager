@@ -8,9 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.taskmanager.R
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity7 : AppCompatActivity() {
     private val splashScreen=1500
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

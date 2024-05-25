@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-
+/*
 @Dao
 interface TaskDao {
 
@@ -21,4 +21,4 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE assignedMail = :email ORDER BY importanceStatus DESC")
     fun getMyTasks(email: String): List<Task>
 
-}
+}*/

@@ -10,9 +10,14 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.taskmanager.R
 import com.example.taskmanager.data.UserDatabase
 import com.example.taskmanager.databinding.ActivityMainBinding
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -23,27 +28,34 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        val userDatabase= UserDatabase.getDatabase(applicationContext)
-        binding.btnLogIn.setOnClickListener {
-            val isLoginSuccesfull=userDatabase.userDAO().loginUser(binding.editTextEmail.text.toString(),binding.editTextPassword.text.toString())
-            if(isLoginSuccesfull){
-                val intent: Intent = Intent(this, MainActivity3::class.java)
-                intent.putExtra("email", binding.editTextEmail.text.toString())
-                startActivity(intent)
-                finish()
-            }
-            else{
-                Toast.makeText(this,"Email adresi veya şifre hatalı!",Toast.LENGTH_LONG).show()
-            }
-
+        // Initialize Firebase Auth
+        auth = Firebase.auth
+        val currentUser=auth.currentUser
+        if(currentUser!=null){
+            val intent=Intent(this,MainActivity3::class.java)
+            intent.putExtra("email",currentUser.email)
+            startActivity(intent)
+            finish()
         }
         binding.textViewSignUp.setOnClickListener {
             val intent: Intent = Intent(this, MainActivity2::class.java)
             startActivity(intent)
         }
+        binding.btnLogIn.setOnClickListener {
+        val email=binding.editTextEmail.text.toString()
+        val password=binding.editTextPassword.text.toString()
+        if(email.equals("") || password.equals("")){
+            Toast.makeText(applicationContext,"Email or password cannot be empty",Toast.LENGTH_SHORT).show()
+        }
+        else{
+            auth.signInWithEmailAndPassword(email,password).addOnSuccessListener {
+                val intent=Intent(this,MainActivity3::class.java)
+                intent.putExtra("email",email)
+                startActivity(intent)
+                finish()
+            }.addOnFailureListener { exception->
+                Toast.makeText(applicationContext,exception.localizedMessage,Toast.LENGTH_SHORT).show()
+            }
+        }
     }
-
-
-
-
-}
+}}
