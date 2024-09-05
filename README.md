@@ -21,8 +21,9 @@ This project aims to offer users a system where they can manage their tasks by a
 
 ## Screens
 ### User Login
-Users log in using their email and password. The system checks if the user exists in the database before granting access.
 ![image](https://github.com/user-attachments/assets/171f121b-1904-4202-b6bf-ffac74e7c1a7)
+Users log in using their email and password. The system checks if the user exists in the database before granting access.
+
 
 
 ### User Registration
