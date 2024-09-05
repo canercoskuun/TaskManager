@@ -15,7 +15,6 @@ This project aims to offer users a system where they can manage their tasks by a
 - Task filtering options ("Assigned to me" and "All tasks")
   
 ## Technologies Used
-- **Firebase**: Used as the backend for handling data and authentication.
 - **Firebase Authentication**: Allows secure login and user registration with email and password.
 - **Firestore Database**: Used for real-time data synchronization, task management, and sorting.
 
