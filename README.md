@@ -43,7 +43,7 @@ Tasks are displayed in two sections:
 1. **Assigned to Me**: Shows tasks assigned to the logged-in user.
 2. **All Tasks**: Shows all available tasks.
    
-Tasks are displayed using a `ListView` due to the small dataset size, but for larger datasets, `RecyclerView` is used.
+
 
 ### Add Task Screen
 
