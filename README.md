@@ -37,7 +37,9 @@ If a user does not have an account, they can create one. Users can also navigate
 
 
 ### Task List
+
 ![image](https://github.com/user-attachments/assets/f09e8944-f8cd-4a87-aa31-9fc543f343cf)
+
 Tasks are displayed in two sections:
 1. **Assigned to Me**: Shows tasks assigned to the logged-in user.
 2. **All Tasks**: Shows all available tasks.
@@ -45,6 +47,7 @@ Tasks are displayed in two sections:
 Tasks are displayed using a `ListView` due to the small dataset size, but for larger datasets, `RecyclerView` is used.
 
 ### Add Task Screen
+
 ![image](https://github.com/user-attachments/assets/1db8b7ce-d61b-4876-8507-3673f3fd3999)
 
 Users can add new tasks and assign them to themselves or others. Tasks are categorized by priority levels, which are:
