@@ -21,14 +21,19 @@ This project aims to offer users a system where they can manage their tasks by a
 
 ## Screens
 ### User Login
+
 ![image](https://github.com/user-attachments/assets/171f121b-1904-4202-b6bf-ffac74e7c1a7)
+
 Users log in using their email and password. The system checks if the user exists in the database before granting access.
 
 
 
 ### User Registration
-If a user does not have an account, they can create one. Users can also navigate back to the login screen if needed.
+
 ![image](https://github.com/user-attachments/assets/38ee93bc-e825-4775-820e-e9bc9c6640c3)
+
+If a user does not have an account, they can create one. Users can also navigate back to the login screen if needed.
+
 
 
 ### Task List
